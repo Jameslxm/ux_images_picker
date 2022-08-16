@@ -1,3 +1,5 @@
+## 1.2.12
+update android package
 ## 1.2.11
 update ios package
 ## 1.2.10
