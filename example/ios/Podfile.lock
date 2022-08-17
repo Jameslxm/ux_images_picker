@@ -1,6 +1,6 @@
 PODS:
   - Flutter (1.0.0)
-  - images_picker (0.0.1):
+  - ux_images_picker (0.0.1):
     - Flutter
     - ZLPhotoBrowser (= 4.2.5)
   - ZLPhotoBrowser (4.2.5):
@@ -9,7 +9,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - images_picker (from `.symlinks/plugins/images_picker/ios`)
+  - ux_images_picker (from `.symlinks/plugins/ux_images_picker/ios`)
 
 SPEC REPOS:
   trunk:
@@ -18,8 +18,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  images_picker:
-    :path: ".symlinks/plugins/images_picker/ios"
+  ux_images_picker:
+    :path: ".symlinks/plugins/ux_images_picker/ios"
 
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a

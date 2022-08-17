@@ -1,4 +1,4 @@
-name: images_picker_example
+name: ux_images_picker_example
 description: Demonstrates how to use the images_picker plugin.
 
 # The following line prevents the package from being accidentally published to
@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
   dio: ^4.0.4
-  images_picker:
+  ux_images_picker:
     # When depending on this package from a real application you should use:
     #   images_picker: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints

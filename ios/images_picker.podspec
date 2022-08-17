@@ -3,8 +3,8 @@
 # Run `pod lib lint flutter_image_picker.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'images_picker'
-  s.version          = '0.0.1'
+  s.name             = 'ux_images_picker'
+  s.version          = '0.0.2'
   s.summary          = 'A new flutter plugin project.'
   s.description      = <<-DESC
 A new flutter plugin project.
