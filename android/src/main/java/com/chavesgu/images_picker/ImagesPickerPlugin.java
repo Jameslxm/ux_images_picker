@@ -60,11 +60,12 @@ public class ImagesPickerPlugin implements FlutterPlugin, MethodCallHandler, Act
   private Context context;
   private int WRITE_IMAGE_CODE = 33;
   private int WRITE_VIDEO_CODE = 44;
+  private int CAMERA_CODE = 45;
   private String WRITE_IMAGE_PATH;
   private String WRITE_VIDEO_PATH;
   private String ALBUM_NAME;
   public static String channelName = "chavesgu/images_picker";
-
+  private PictureSelectionCameraModel cameraModel;
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), channelName);
@@ -161,18 +162,27 @@ public class ImagesPickerPlugin implements FlutterPlugin, MethodCallHandler, Act
             break;
         }
 
-        PictureSelectionCameraModel model = PictureSelector.create(activity)
+        cameraModel = PictureSelector.create(activity)
                 .openCamera(chooseType);
-        model.setOutputCameraDir(context.getExternalCacheDir().getAbsolutePath());
+        cameraModel.setOutputCameraDir(context.getExternalCacheDir().getAbsolutePath());
         if (pickType.equals("PickType.image")) {
-          model.setOutputCameraImageFileName("image_picker_camera_"+UUID.randomUUID().toString()+".jpg");
+          cameraModel.setOutputCameraImageFileName("image_picker_camera_"+UUID.randomUUID().toString()+".jpg");
         } else {
-          model.setOutputCameraVideoFileName("image_picker_camera_"+UUID.randomUUID().toString()+".mp4");
+          cameraModel.setOutputCameraVideoFileName("image_picker_camera_"+UUID.randomUUID().toString()+".mp4");
         }
-        model.setRecordVideoMaxSecond(maxTime);
-        Utils.setLanguage(model, language);
-        Utils.setPhotoSelectOpt(model, 1, quality);
-        resolveMedias(model);
+        cameraModel.setRecordVideoMaxSecond(maxTime);
+        Utils.setLanguage(cameraModel, language);
+        Utils.setPhotoSelectOpt(cameraModel, 1, quality);
+
+        if(hasTakePermission()) {
+          resolveMedias(cameraModel);
+        }else {
+          String[] permissions = new String[3];
+          permissions[0] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+          permissions[1] = Manifest.permission.READ_EXTERNAL_STORAGE;
+          permissions[2] = Manifest.permission.CAMERA;
+          ActivityCompat.requestPermissions(activity, permissions, CAMERA_CODE);
+        }
         break;
       }
       case "saveVideoToAlbum": {
@@ -210,10 +220,19 @@ public class ImagesPickerPlugin implements FlutterPlugin, MethodCallHandler, Act
         break;
     }
   }
+
+  private boolean hasTakePermission() {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PERMISSION_GRANTED);
+  }
+
   private void resolveMedias(PictureSelectionCameraModel model) {
+    if(model == null) return;
     model.forResult(new OnResultCallbackListener<LocalMedia>() {
       @Override
-      public void onResult(ArrayList<LocalMedia> medias) {
+      public void onResult(final ArrayList<LocalMedia> medias) {
         // 结果回调
         new Thread() {
           @Override
@@ -268,7 +287,7 @@ public class ImagesPickerPlugin implements FlutterPlugin, MethodCallHandler, Act
   private void resolveMedias(PictureSelectionModel model) {
     model.forResult(new OnResultCallbackListener<LocalMedia>() {
       @Override
-      public void onResult(ArrayList<LocalMedia> medias) {
+      public void onResult(final ArrayList<LocalMedia> medias) {
         // 结果回调
         new Thread() {
           @Override
@@ -393,16 +412,22 @@ public class ImagesPickerPlugin implements FlutterPlugin, MethodCallHandler, Act
             (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED);
   }
 
-    @Override
-    public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-      if (requestCode == WRITE_IMAGE_CODE && grantResults[0] == PERMISSION_GRANTED && grantResults[1] == PERMISSION_GRANTED) {
-          saveImageToGallery(WRITE_IMAGE_PATH, ALBUM_NAME);
-          return true;
-      }
-      if (requestCode == WRITE_VIDEO_CODE && grantResults[0] == PERMISSION_GRANTED && grantResults[1] == PERMISSION_GRANTED) {
-          saveVideoToGallery(WRITE_VIDEO_PATH, ALBUM_NAME);
-          return true;
-      }
-      return false;
+  @Override
+  public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    if (requestCode == WRITE_IMAGE_CODE && grantResults[0] == PERMISSION_GRANTED && grantResults[1] == PERMISSION_GRANTED) {
+      saveImageToGallery(WRITE_IMAGE_PATH, ALBUM_NAME);
+      return true;
     }
+    if (requestCode == WRITE_VIDEO_CODE && grantResults[0] == PERMISSION_GRANTED && grantResults[1] == PERMISSION_GRANTED) {
+      saveVideoToGallery(WRITE_VIDEO_PATH, ALBUM_NAME);
+      return true;
+    }
+    if(requestCode == CAMERA_CODE && grantResults[0] == PERMISSION_GRANTED
+            && grantResults[1] == PERMISSION_GRANTED
+            && grantResults[2] == PERMISSION_GRANTED){
+      resolveMedias(cameraModel);
+      return true;
+    }
+    return false;
+  }
 }
